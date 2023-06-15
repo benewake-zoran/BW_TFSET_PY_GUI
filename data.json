@@ -1,0 +1,10 @@
+[
+    {"id": 0, "name": "固件版本", "widget": "QLabel", "button": "请求", "cmd": "5A 04 01 5F"},
+    {"id": 1, "name": "系统复位", "widget": "QLabel", "button": "设置", "cmd": "5A 04 02 60"},
+    {"id": 2, "name": "保存", "widget": "QLabel", "button": "设置", "cmd": "5A 04 11 6F"},
+	{"id": 3, "name": "恢复出厂", "widget": "QLabel", "button": "设置", "cmd": "5A 04 10 6E"},
+	{"id": 4, "name": "输出模式", "widget": "QComboBox", "button": "设置", "cmd": "5A 05 05 01 65"},
+	{"id": 5, "name": "输出帧率", "widget": "QLineEdit", "button": "设置", "cmd": "5A 06 03 LL HH SU"}
+
+]
+

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>496</width>
+    <height>739</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>BW_WINCC</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>BenewakeLogo.ico</normaloff>BenewakeLogo.ico</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QFrame" name="frame">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>501</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QPushButton" name="pushButton">
+     <property name="geometry">
+      <rect>
+       <x>380</x>
+       <y>13</y>
+       <width>93</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>连接</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_3">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>35</width>
+       <height>15</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>串口</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>17</y>
+       <width>120</width>
+       <height>21</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="geometry">
+      <rect>
+       <x>190</x>
+       <y>20</y>
+       <width>50</width>
+       <height>15</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>波特率</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_2">
+     <property name="geometry">
+      <rect>
+       <x>245</x>
+       <y>17</y>
+       <width>101</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>115200</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>9600</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>19200</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>38400</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>57600</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>256000</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>460800</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>921600</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="Line" name="line">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>45</y>
+       <width>501</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>496</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="actionOpen"/>
+   </widget>
+   <addaction name="menu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpen">
+   <property name="text">
+    <string>打开</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>actionOpen</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>trigger_actOpen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>330</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>connectSerial()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>426</x>
+     <y>52</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>247</x>
+     <y>344</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>trigger_actOpen()</slot>
+  <slot>getSerialPort()</slot>
+  <slot>connectSerial()</slot>
+ </slots>
+</ui>
