@@ -1,5 +1,0 @@
-[
-    {"label": "固件版本", "cmd": "5A 04 01 5F", "label": "", "button": "请求"},
-    {"label": "系统复位", "cmd": "5A 04 02 60", "label": "", "button": "设置"},
-    {"label": "保存", "cmd": "5A 04 11 6F", "combobox": "", "button": "设置"}
-]

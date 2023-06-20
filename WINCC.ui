@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>496</width>
-    <height>739</height>
+    <width>452</width>
+    <height>833</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,8 +23,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>501</width>
-      <height>61</height>
+      <width>451</width>
+      <height>91</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -33,47 +33,50 @@
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="pushButton_connect">
      <property name="geometry">
       <rect>
-       <x>380</x>
-       <y>13</y>
-       <width>93</width>
+       <x>310</x>
+       <y>8</y>
+       <width>120</width>
        <height>28</height>
       </rect>
      </property>
      <property name="text">
-      <string>连接</string>
+      <string>连接串口</string>
+     </property>
+     <property name="autoRepeat">
+      <bool>false</bool>
      </property>
     </widget>
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="label_serial">
      <property name="geometry">
       <rect>
        <x>20</x>
-       <y>20</y>
-       <width>35</width>
-       <height>15</height>
+       <y>15</y>
+       <width>41</width>
+       <height>16</height>
       </rect>
      </property>
      <property name="text">
       <string>串口</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="comboBox">
+    <widget class="QComboBox" name="comboBox_serial">
      <property name="geometry">
       <rect>
-       <x>60</x>
-       <y>17</y>
-       <width>120</width>
+       <x>80</x>
+       <y>12</y>
+       <width>211</width>
        <height>21</height>
       </rect>
      </property>
     </widget>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="label_baudrate">
      <property name="geometry">
       <rect>
-       <x>190</x>
-       <y>20</y>
+       <x>20</x>
+       <y>50</y>
        <width>50</width>
        <height>15</height>
       </rect>
@@ -82,12 +85,12 @@
       <string>波特率</string>
      </property>
     </widget>
-    <widget class="QComboBox" name="comboBox_2">
+    <widget class="QComboBox" name="comboBox_baudrate">
      <property name="geometry">
       <rect>
-       <x>245</x>
-       <y>17</y>
-       <width>101</width>
+       <x>80</x>
+       <y>47</y>
+       <width>120</width>
        <height>21</height>
       </rect>
      </property>
@@ -135,16 +138,39 @@
     <widget class="Line" name="line">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>45</y>
-       <width>501</width>
-       <height>20</height>
+       <x>5</x>
+       <y>65</y>
+       <width>441</width>
+       <height>41</height>
       </rect>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
+    <widget class="QPushButton" name="pushButton_refresh">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>45</y>
+       <width>120</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>刷新串口</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="widget1" native="true">
+    <property name="geometry">
+     <rect>
+      <x>-1</x>
+      <y>89</y>
+      <width>451</width>
+      <height>711</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -152,7 +178,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>496</width>
+     <width>452</width>
      <height>26</height>
     </rect>
    </property>
@@ -162,7 +188,16 @@
     </property>
     <addaction name="actionOpen"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>语言(Language)</string>
+    </property>
+    <addaction name="actionChinese"/>
+    <addaction name="separator"/>
+    <addaction name="actionEnglish"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen">
@@ -171,6 +206,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionChinese">
+   <property name="text">
+    <string>中文</string>
+   </property>
+   <property name="font">
+    <font>
+     <underline>false</underline>
+     <kerning>false</kerning>
+    </font>
+   </property>
+  </action>
+  <action name="actionEnglish">
+   <property name="text">
+    <string>English</string>
    </property>
   </action>
  </widget>
@@ -193,7 +244,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
+   <sender>pushButton_connect</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>connectSerial()</slot>
@@ -208,10 +259,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_refresh</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>refreshSerial()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>536</x>
+     <y>52</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>296</x>
+     <y>431</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>trigger_actOpen()</slot>
   <slot>getSerialPort()</slot>
   <slot>connectSerial()</slot>
+  <slot>refreshSerial()</slot>
  </slots>
 </ui>

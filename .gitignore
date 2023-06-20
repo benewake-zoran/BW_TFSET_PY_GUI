@@ -1,4 +1,7 @@
 __pycache__/
+build/
+dist/
+*.spec
 data.txt
 hello.py
 test.py
