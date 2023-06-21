@@ -118,7 +118,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
                     elif item['name'] == '修改I2C从机地址':
                         widget.setPlaceholderText("0x01 - 0x7F")
                     elif item['name'] == '低功耗模式使能':
-                        widget.setPlaceholderText("1 - 10 (Hz)")
+                        widget.setPlaceholderText("0(关闭);1 - 10 (打开)")
                     layout.addWidget(widget, item['id'], 1)
                 else:
                     print('widget is False')
@@ -249,8 +249,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
             self.labelReturnlist[self.index].setText('NG')
             self.labelReturnlist[self.index].setStyleSheet('color: red')
             QMessageBox.warning(None, 'Error', str(e))
-            # labelReturn.setText('NG')
-        
+
     def nameType(self):
         if self.data[self.index]['name'] == '序列号':
             SN_rxhex = self.rx[3:17]
@@ -280,10 +279,10 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
             if self.rx.hex() != '5a05110070':
                 self.labelReturnlist[self.index].setText('NG')
                 self.labelReturnlist[self.index].setStyleSheet('color: red')
-        elif self.data[self.index]['name'] == '输出帧率':
-            #of_val = self.widgetslist[self.index].text()
-            #of_hex = hex(of_val)
-            print('of_hex')
+        elif self.data[self.index]['name'] == '输出帧率' or self.data[self.index]['name'] == '低功耗模式使能':
+            if self.rx != self.newCmd:
+                self.labelReturnlist[self.index].setText('NG')
+                self.labelReturnlist[self.index].setStyleSheet('color: red')
 
     def lineEditCmd(self):
         priCmd = self.data[self.index]['cmd']
@@ -295,6 +294,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
         priCmddata_list = priCmdhex_list[3:-1]  # 帧数据段
         priCmdsum_int = int(priCmdhead_str, 16) + int(priCmdlen_str, 16) + int(priCmdid_str, 16)  # 未加数据段的校验和
         print('priCmddata_list:', priCmddata_list)
+
         if self.data[self.index]['name'] == '输出帧率':
             outframeVal_hexstr = hex(int(self.editVal))  # 将输入值转为十六进值字符串
             outframeVal_str = outframeVal_hexstr[2:]  # 将十六进制中的0x字符去掉
@@ -304,14 +304,30 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
             priCmddata_list[0] = outframeVal_list[1]  # 将输入低字节填入 LL 字符串
             priCmddata_list[1] = outframeVal_list[0]  # 将输入高字节填入 HH 字符串
             newCmddata_str = priCmddata_list[0] + priCmddata_list[1]  # 连接数据段
-            print('newCmddata_str:', newCmddata_str)
             newCmdsum_hexstr = hex(priCmdsum_int + int(outframeVal_list[0], 16) + int(outframeVal_list[1], 16))  # 加上数据段的校验和
-            newCmdsum_str = str(newCmdsum_hexstr)[-2:]  # 取出校验和最后两位字符
-            newCmdstr = priCmdhead_str + priCmdlen_str + priCmdid_str + newCmddata_str + newCmdsum_str  # 连接为更新后的指令字符串
-            self.newCmd = bytes.fromhex(newCmdstr)  # 将指令字符串格式转为串口发送的字节格式
-            print('newCmdsum_hexstr:', newCmdsum_hexstr, 'newCmdsum_str:', newCmdsum_str)
-            print('newCmdstr:', newCmdstr, 'newCmdbytes:', self.newCmd)
+        elif self.data[self.index]['name'] == '修改I2C从机地址':
+            addrVal_hexstr = self.editVal  # 读取输入十六进制字符串
+            print('addrVal_hexstr:', addrVal_hexstr)
+            addrVal_str = addrVal_hexstr[2:]  # 将十六进制中的0x字符去掉
+            priCmddata_list[0] = addrVal_str  # 填入ADDR字节
+            newCmddata_str = priCmddata_list[0]
+            newCmdsum_hexstr = hex(priCmdsum_int + int(addrVal_str, 16))  # 加上数据段的校验和
+        elif self.data[self.index]['name'] == '低功耗模式使能':
+            lowpowVal_hexstr = hex(int(self.editVal))  # 将输入值转为十六进值字符串
+            lowpowVal_str = lowpowVal_hexstr[2:]  # 将十六进制中的0x字符去掉
+            lowpowVal_str0 = lowpowVal_str.rjust(2, '0')  # 补齐到2位不足添0
+            priCmddata_list[0] = lowpowVal_str0  # 填入0X字节
+            newCmddata_str = priCmddata_list[0] + priCmddata_list[1]  # 连接数据段
+            newCmdsum_hexstr = hex(priCmdsum_int + int(lowpowVal_str0, 16))  # 加上数据段的校验和
+
+        newCmdsum_str = str(newCmdsum_hexstr)[-2:]  # 取出校验和最后两位字符
+        newCmdstr = priCmdhead_str + priCmdlen_str + priCmdid_str + newCmddata_str + newCmdsum_str  # 连接为更新后的指令字符串
+        self.newCmd = bytes.fromhex(newCmdstr)  # 将指令字符串格式转为串口发送的字节格式
+        print('newCmddata_str:', newCmddata_str)
+        print('newCmdsum_hexstr:', newCmdsum_hexstr, 'newCmdsum_str:', newCmdsum_str)
+        print('newCmdstr:', newCmdstr, 'newCmdbytes:', self.newCmd)        
         print('------------------------------')
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)  # 创建应用程序对象
