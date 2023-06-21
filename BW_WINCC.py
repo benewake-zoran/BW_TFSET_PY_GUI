@@ -92,24 +92,6 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
                 if item['widget'] == 'QLabel':
                     widget = QtWidgets.QLabel(self)
                     widget.setAlignment(QtCore.Qt.AlignCenter)
-                    #if item['name'] == '序列号':
-                        #widget.setObjectName('label_SN')
-                    #    widget.setAlignment(QtCore.Qt.AlignCenter)
-                    #elif item['name'] == '固件版本':
-                        #widget.setObjectName('label_Version')
-                    #    widget.setAlignment(QtCore.Qt.AlignCenter)
-                    #elif item['name'] == '系统复位':
-                        #widget.setObjectName('label_SystemReset')
-                    #    widget.setAlignment(QtCore.Qt.AlignCenter)
-                    #elif item['name'] == '单次触发指令':
-                        #widget.setObjectName('label_SingleTrigger')
-                    #    widget.setAlignment(QtCore.Qt.AlignCenter)
-                    #elif item['name'] == '恢复出厂':
-                        #widget.setObjectName('label_RestoreFactory')
-                    #    widget.setAlignment(QtCore.Qt.AlignCenter)
-                    #elif item['name'] == '保存':
-                        #widget.setObjectName('label_Save')
-                    #    widget.setAlignment(QtCore.Qt.AlignCenter)
                     layout.addWidget(widget, item['id'], 1)
                 elif item['widget'] == 'QComboBox':
                     widget = QtWidgets.QComboBox(self)
@@ -132,13 +114,10 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
                 elif item['widget'] == 'QLineEdit':
                     widget = QtWidgets.QLineEdit(self)
                     if item['name'] == '输出帧率':
-                        widget.setObjectName('lineEdit_OutputFramerate')
-                        widget.setPlaceholderText("1 - 1000 (Hz)")
+                        widget.setPlaceholderText("0 - 1000 (Hz)")
                     elif item['name'] == '修改I2C从机地址':
-                        widget.setObjectName('lineEdit_ChangeI2CAddress')
                         widget.setPlaceholderText("0x01 - 0x7F")
                     elif item['name'] == '低功耗模式使能':
-                        widget.setObjectName('lineEdit_LowpowerEnable')
                         widget.setPlaceholderText("1 - 10 (Hz)")
                     layout.addWidget(widget, item['id'], 1)
                 else:
@@ -202,16 +181,19 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
             button = self.sender()  # 获取当前被点击的按钮
             self.index = self.buttonlist.index(button)  # 获取按钮在列表中的索引
             if self.data[self.index]['widget'] == 'QLabel':
-                cmd = self.data[self.index]['cmd']  # 获取对应的指令
-                print('send cmd:', cmd)
-                cmdb = bytes.fromhex(cmd)
-                print('cmdb', cmdb)
+                labelCmd = self.data[self.index]['cmd']  # 获取对应的指令
+                print('send cmd:', labelCmd)
+                labelCmdb = bytes.fromhex(labelCmd)
+                print('cmdb', labelCmdb)
                 self.ser.reset_input_buffer()
-                self.ser.write(cmdb)  # 发送指令
+                self.ser.write(labelCmdb)  # 发送指令
                 print('------------------------------')
             elif self.data[self.index]['widget'] == 'QLineEdit':
-                val = self.widgetslist[self.index].text()
-                print(val)
+                self.editVal = self.widgetslist[self.index].text()
+                print('editVal:', self.editVal)
+                self.lineEditCmd()
+                self.ser.reset_input_buffer()
+                self.ser.write(self.newCmd)
 
             start_time = time.time()  # 记录开始时间
             while True:
@@ -232,7 +214,29 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
                         self.labelReturnlist[self.index].setStyleSheet('color: green')
                         break
                     elif self.data[self.index]['name'] == '单次触发指令':
-                        print('判断帧率是否为零 若不是0则ng 是零则返回0字节数据帧')
+                        start_time = time.time()  # 记录开始时间
+                        start_frames = self.ser.in_waiting  # 记录开始时的数据帧数
+                        time.sleep(1)  # 等待1秒
+                        end_time = time.time()  # 记录结束时间
+                        end_frames = self.ser.in_waiting  # 记录结束时的数据帧数
+                        elapsed_time = end_time - start_time  # 计算经过的时间
+                        frame_rate = (end_frames - start_frames) / elapsed_time  # 计算数据帧率
+                        if frame_rate == 0:
+                            rxdata = self.ser.read(8)  # 读取剩下字节
+                            rx = rxhead + rxdata  # 连接帧头和数据段
+                            print('rx:', ' '.join([hex(x)[2:].zfill(2) for x in rx]))
+                            dist = int.from_bytes(rx[2:4], byteorder='little')
+                            strength = int.from_bytes(rx[4:6], byteorder='little')
+                            temp = int.from_bytes(rx[6:8], byteorder='little')
+                            text = 'D=' + str(dist) + ';S=' + str(strength) + ';T=' + str(temp)
+                            self.widgetslist[self.index].setText(text)
+                            self.labelReturnlist[self.index].setText('OK')  # 帧率为0则回显标签OK
+                            self.labelReturnlist[self.index].setStyleSheet('color: green')
+                            print("Serial port output frame rate is 0.")
+                        else:
+                            self.labelReturnlist[self.index].setText('NG')
+                            self.labelReturnlist[self.index].setStyleSheet('color: red')
+                            print("Serial port output frame rate is {}.".format(frame_rate))
                         break
                     else:
                         if (time.time() - start_time) > 2:  # 超过2s跳出循环
@@ -244,15 +248,13 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
             print(e)
             self.labelReturnlist[self.index].setText('NG')
             self.labelReturnlist[self.index].setStyleSheet('color: red')
-            # QMessageBox.warning(None, 'Error', str(e))
+            QMessageBox.warning(None, 'Error', str(e))
             # labelReturn.setText('NG')
-
+        
     def nameType(self):
         if self.data[self.index]['name'] == '序列号':
             SN_rxhex = self.rx[3:17]
             SN_rxstr = ''.join([chr(x) for x in SN_rxhex])
-            #SN_label = self.widget1.findChild(QtWidgets.QLabel, 'label_SN')
-            #SN_label.setText(SN_rxstr)
             self.widgetslist[self.index].setText(SN_rxstr)
             print('序列号是：', SN_rxstr)
             print('------------------------------')
@@ -260,38 +262,56 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
             version_rxhex = self.rx[3:6][::-1].hex()  # 取出字节数组并反转后转为十六进制
             # 每两个字符由hex转为int，用'.'连接为str
             version_rxstr = '.'.join(str(int(version_rxhex[i:i + 2], 16)) for i in range(0, len(version_rxhex), 2))
-            #version_label = self.widget1.findChild(QtWidgets.QLabel, 'label_Version')
-            #version_label.setText(version_rxstr)
             self.widgetslist[self.index].setText(version_rxstr)
             print('固件版本是：', version_rxstr)
             print('------------------------------')
         elif self.data[self.index]['name'] == '系统复位':
-            #systemreset_label = self.widget1.findChild(QtWidgets.QLabel, 'label_SystemReset')
-            #systemreset_label.setText(' '.join([hex(x)[2:].zfill(2) for x in self.rx]))
             self.widgetslist[self.index].setText(' '.join([hex(x)[2:].zfill(2) for x in self.rx]))
             if self.rx.hex() != '5a05020061':
                 self.labelReturnlist[self.index].setText('NG')
                 self.labelReturnlist[self.index].setStyleSheet('color: red')
         elif self.data[self.index]['name'] == '恢复出厂':
-            #restorefactory_label = self.widget1.findChild(QtWidgets.QLabel, 'label_RestoreFactory')
-            #restorefactory_label.setText(' '.join([hex(x)[2:].zfill(2) for x in self.rx]))
             self.widgetslist[self.index].setText(' '.join([hex(x)[2:].zfill(2) for x in self.rx]))
             if self.rx.hex() != '5a0510006f':
                 self.labelReturnlist[self.index].setText('NG')
                 self.labelReturnlist[self.index].setStyleSheet('color: red')
         elif self.data[self.index]['name'] == '保存':
-            #save_label = self.widget1.findChild(QtWidgets.QLabel, 'label_Save')
-            #save_label.setText(' '.join([hex(x)[2:].zfill(2) for x in self.rx]))
             self.widgetslist[self.index].setText(' '.join([hex(x)[2:].zfill(2) for x in self.rx]))
             if self.rx.hex() != '5a05110070':
                 self.labelReturnlist[self.index].setText('NG')
                 self.labelReturnlist[self.index].setStyleSheet('color: red')
         elif self.data[self.index]['name'] == '输出帧率':
-            outputframerate_edit = self.widget1.findChild(QtWidgets.QLineEdit, 'lineEdit_OutputFramerate')
-            of_val = outputframerate_edit.text()
-            of_hex = hex(of_val)
-            print(of_hex)
+            #of_val = self.widgetslist[self.index].text()
+            #of_hex = hex(of_val)
+            print('of_hex')
 
+    def lineEditCmd(self):
+        priCmd = self.data[self.index]['cmd']
+        print('priCmd:', priCmd)
+        priCmdhex_list = priCmd.split()  # 字符串存进一个列表
+        priCmdhead_str = priCmdhex_list[0]  # 帧头
+        priCmdlen_str = priCmdhex_list[1]  # 帧总长度
+        priCmdid_str = priCmdhex_list[2]  # 帧功能码
+        priCmddata_list = priCmdhex_list[3:-1]  # 帧数据段
+        priCmdsum_int = int(priCmdhead_str, 16) + int(priCmdlen_str, 16) + int(priCmdid_str, 16)  # 未加数据段的校验和
+        print('priCmddata_list:', priCmddata_list)
+        if self.data[self.index]['name'] == '输出帧率':
+            outframeVal_hexstr = hex(int(self.editVal))  # 将输入值转为十六进值字符串
+            outframeVal_str = outframeVal_hexstr[2:]  # 将十六进制中的0x字符去掉
+            outframeVal_str0 = outframeVal_str.rjust(4, '0')  # 补齐到4位不足添0
+            outframeVal_list = [outframeVal_str0[i:i + 2] for i in range(0, len(outframeVal_str0), 2)]  # 每两个字符分割并存进列表
+            print('outframeVal_list:', outframeVal_list)
+            priCmddata_list[0] = outframeVal_list[1]  # 将输入低字节填入 LL 字符串
+            priCmddata_list[1] = outframeVal_list[0]  # 将输入高字节填入 HH 字符串
+            newCmddata_str = priCmddata_list[0] + priCmddata_list[1]  # 连接数据段
+            print('newCmddata_str:', newCmddata_str)
+            newCmdsum_hexstr = hex(priCmdsum_int + int(outframeVal_list[0], 16) + int(outframeVal_list[1], 16))  # 加上数据段的校验和
+            newCmdsum_str = str(newCmdsum_hexstr)[-2:]  # 取出校验和最后两位字符
+            newCmdstr = priCmdhead_str + priCmdlen_str + priCmdid_str + newCmddata_str + newCmdsum_str  # 连接为更新后的指令字符串
+            self.newCmd = bytes.fromhex(newCmdstr)  # 将指令字符串格式转为串口发送的字节格式
+            print('newCmdsum_hexstr:', newCmdsum_hexstr, 'newCmdsum_str:', newCmdsum_str)
+            print('newCmdstr:', newCmdstr, 'newCmdbytes:', self.newCmd)
+        print('------------------------------')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)  # 创建应用程序对象
