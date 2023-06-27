@@ -90,9 +90,9 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu_2.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.actionOpen.triggered.connect(MainWindow.trigger_actOpen) # type: ignore
-        self.pushButton_connect.clicked.connect(MainWindow.connectSerial) # type: ignore
-        self.pushButton_refresh.clicked.connect(MainWindow.refreshSerial) # type: ignore
+        self.actionOpen.triggered.connect(MainWindow.trigger_actOpen)  # type: ignore
+        self.pushButton_connect.clicked.connect(MainWindow.connectSerial)  # type: ignore
+        self.pushButton_refresh.clicked.connect(MainWindow.refreshSerial)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

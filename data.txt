@@ -1,4 +1,0 @@
-label1
-button1
-label2
-button2
