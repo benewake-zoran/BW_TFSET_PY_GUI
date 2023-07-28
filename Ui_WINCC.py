@@ -30,16 +30,16 @@ class Ui_MainWindow(object):
         self.pushButton_connect.setAutoRepeat(False)
         self.pushButton_connect.setObjectName("pushButton_connect")
         self.label_serial = QtWidgets.QLabel(self.frame)
-        self.label_serial.setGeometry(QtCore.QRect(20, 15, 41, 16))
+        self.label_serial.setGeometry(QtCore.QRect(20, 15, 35, 16))
         self.label_serial.setObjectName("label_serial")
         self.comboBox_serial = QtWidgets.QComboBox(self.frame)
-        self.comboBox_serial.setGeometry(QtCore.QRect(80, 12, 211, 21))
+        self.comboBox_serial.setGeometry(QtCore.QRect(55, 12, 80, 21))
         self.comboBox_serial.setObjectName("comboBox_serial")
         self.label_baudrate = QtWidgets.QLabel(self.frame)
-        self.label_baudrate.setGeometry(QtCore.QRect(20, 50, 50, 15))
+        self.label_baudrate.setGeometry(QtCore.QRect(145, 15, 50, 15))
         self.label_baudrate.setObjectName("label_baudrate")
         self.comboBox_baudrate = QtWidgets.QComboBox(self.frame)
-        self.comboBox_baudrate.setGeometry(QtCore.QRect(80, 47, 120, 21))
+        self.comboBox_baudrate.setGeometry(QtCore.QRect(210, 12, 80, 21))
         self.comboBox_baudrate.setObjectName("comboBox_baudrate")
         self.comboBox_baudrate.addItem("")
         self.comboBox_baudrate.addItem("")
@@ -57,6 +57,22 @@ class Ui_MainWindow(object):
         self.pushButton_refresh = QtWidgets.QPushButton(self.frame)
         self.pushButton_refresh.setGeometry(QtCore.QRect(310, 45, 120, 28))
         self.pushButton_refresh.setObjectName("pushButton_refresh")
+        self.label_id = QtWidgets.QLabel(self.frame)
+        self.label_id.setGeometry(QtCore.QRect(145, 50, 65, 16))
+        self.label_id.setObjectName("label_id")
+        self.label_port = QtWidgets.QLabel(self.frame)
+        self.label_port.setGeometry(QtCore.QRect(20, 50, 35, 15))
+        self.label_port.setObjectName("label_port")
+        self.comboBox_port = QtWidgets.QComboBox(self.frame)
+        self.comboBox_port.setGeometry(QtCore.QRect(55, 47, 80, 21))
+        self.comboBox_port.setObjectName("comboBox_port")
+        self.comboBox_port.addItem("")
+        self.comboBox_port.addItem("")
+        self.comboBox_port.addItem("")
+        self.comboBox_port.addItem("")
+        self.lineEdit_id = QtWidgets.QLineEdit(self.frame)
+        self.lineEdit_id.setGeometry(QtCore.QRect(210, 48, 80, 21))
+        self.lineEdit_id.setObjectName("lineEdit_id")
         self.widget1 = QtWidgets.QWidget(self.centralwidget)
         self.widget1.setGeometry(QtCore.QRect(-1, 89, 451, 711))
         self.widget1.setObjectName("widget1")
@@ -90,9 +106,10 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu_2.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.actionOpen.triggered.connect(MainWindow.trigger_actOpen)  # type: ignore
-        self.pushButton_connect.clicked.connect(MainWindow.connectSerial)  # type: ignore
-        self.pushButton_refresh.clicked.connect(MainWindow.refreshSerial)  # type: ignore
+        self.actionOpen.triggered.connect(MainWindow.trigger_actOpen) # type: ignore
+        self.pushButton_connect.clicked.connect(MainWindow.connectSerial) # type: ignore
+        self.pushButton_refresh.clicked.connect(MainWindow.refreshSerial) # type: ignore
+        self.comboBox_port.currentIndexChanged['QString'].connect(MainWindow.comboBoxPortChange) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -110,8 +127,14 @@ class Ui_MainWindow(object):
         self.comboBox_baudrate.setItemText(6, _translate("MainWindow", "460800"))
         self.comboBox_baudrate.setItemText(7, _translate("MainWindow", "921600"))
         self.pushButton_refresh.setText(_translate("MainWindow", "刷新串口"))
+        self.label_id.setText(_translate("MainWindow", "从机地址"))
+        self.label_port.setText(_translate("MainWindow", "接口"))
+        self.comboBox_port.setItemText(0, _translate("MainWindow", "UART"))
+        self.comboBox_port.setItemText(1, _translate("MainWindow", "IIC"))
+        self.comboBox_port.setItemText(2, _translate("MainWindow", "RS485"))
+        self.comboBox_port.setItemText(3, _translate("MainWindow", "RS232"))
         self.menu.setTitle(_translate("MainWindow", "文件"))
-        self.menu_2.setTitle(_translate("MainWindow", "语言(Language)"))
+        self.menu_2.setTitle(_translate("MainWindow", "语言"))
         self.actionOpen.setText(_translate("MainWindow", "打开"))
         self.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O"))
         self.actionChinese.setText(_translate("MainWindow", "中文"))

@@ -54,7 +54,7 @@
       <rect>
        <x>20</x>
        <y>15</y>
-       <width>41</width>
+       <width>35</width>
        <height>16</height>
       </rect>
      </property>
@@ -65,9 +65,9 @@
     <widget class="QComboBox" name="comboBox_serial">
      <property name="geometry">
       <rect>
-       <x>80</x>
+       <x>55</x>
        <y>12</y>
-       <width>211</width>
+       <width>80</width>
        <height>21</height>
       </rect>
      </property>
@@ -75,8 +75,8 @@
     <widget class="QLabel" name="label_baudrate">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>50</y>
+       <x>145</x>
+       <y>15</y>
        <width>50</width>
        <height>15</height>
       </rect>
@@ -88,9 +88,9 @@
     <widget class="QComboBox" name="comboBox_baudrate">
      <property name="geometry">
       <rect>
-       <x>80</x>
-       <y>47</y>
-       <width>120</width>
+       <x>210</x>
+       <y>12</y>
+       <width>80</width>
        <height>21</height>
       </rect>
      </property>
@@ -161,6 +161,72 @@
       <string>刷新串口</string>
      </property>
     </widget>
+    <widget class="QLabel" name="label_id">
+     <property name="geometry">
+      <rect>
+       <x>145</x>
+       <y>50</y>
+       <width>65</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>从机地址</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_port">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>50</y>
+       <width>35</width>
+       <height>15</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>接口</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_port">
+     <property name="geometry">
+      <rect>
+       <x>55</x>
+       <y>47</y>
+       <width>80</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>UART</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>IIC</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>RS485</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>RS232</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_id">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>48</y>
+       <width>80</width>
+       <height>21</height>
+      </rect>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="widget1" native="true">
     <property name="geometry">
@@ -190,7 +256,7 @@
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
-     <string>语言(Language)</string>
+     <string>语言</string>
     </property>
     <addaction name="actionChinese"/>
     <addaction name="separator"/>
@@ -275,11 +341,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>comboBox_port</sender>
+   <signal>currentIndexChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>comboBoxPortChange()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>94</x>
+     <y>83</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>225</x>
+     <y>416</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>trigger_actOpen()</slot>
   <slot>getSerialPort()</slot>
   <slot>connectSerial()</slot>
   <slot>refreshSerial()</slot>
+  <slot>comboBoxPortChange()</slot>
  </slots>
 </ui>
