@@ -1,5 +1,5 @@
 import time
-
+SaveFlag = 0 #记录保存状态
 
 def send_UART(self):
     if self.data[self.index]['widget'] == 'QLabel':
@@ -8,22 +8,23 @@ def send_UART(self):
         self.labelCmdb = bytes.fromhex(labelCmd)
         print('cmdb', self.labelCmdb)
         self.ser.reset_input_buffer()
+        self.newCmd = self.labelCmdb
         self.ser.write(self.labelCmdb)  # 发送指令
         print('------------------------------')
     elif self.data[self.index]['widget'] == 'QLineEdit':
-        self.editVal = self.widgetslist[self.index].text()  # 获取文本框输入值
+        self.editVal = self.widgetslist[self.index].text()  # 获取文本框输入值  
         print('editVal:', self.editVal)
         lineEditCmd_UART(self)
         self.ser.reset_input_buffer()
         self.ser.write(self.newCmd)
     elif self.data[self.index]['widget'] == 'QComboBox':
-        self.boxVal = self.widgetslist[self.index].currentText()  # 获取当前下拉列表值
+        self.boxVal = self.widgetslist[self.index].currentText()  # 获取当前下拉列表值  根据这个 选项 序号
         print('boxVal:', self.boxVal)
         comboBoxCmd(self)
         self.ser.reset_input_buffer()
         self.ser.write(self.newCmd)
 
-
+#读取数据
 def recvData_UART(self):
     start_time = time.time()  # 记录开始时间
     while True:
@@ -95,7 +96,38 @@ def recvData_UART(self):
                 break
 
 
+
+# 检查输出帧率
+def checkFrame_UART(self):
+    # 计算帧率
+    self.ser.reset_input_buffer()
+    start_time = time.time()
+    frame_count = 0
+    while True:
+        rx = self.ser.read(9)
+        if len(rx) == 9:
+            frame_count += 1
+        endtime = time.time()
+        time_diff = endtime - start_time
+        if time_diff >= 1:
+            fps = frame_count / time_diff  # 计算帧率
+            print('Frame rate: {:.2f} Hz'.format(fps))
+            break
+    if fps > 0:
+        self.labelReturnlist[self.index].setText('OK')
+        self.labelReturnlist[self.index].setStyleSheet('color: green')
+        print('Framerate is Correct')
+    else:
+        self.labelReturnlist[self.index].setText('NG')
+        self.labelReturnlist[self.index].setStyleSheet('color: red')
+        print('Framerate is Error')
+    self.widgetslist[self.index].setText(str(round(fps)) + ' (Hz)')
+    self.rx = b''
+    print('------------------------------')
+
+#根据名称，分类判断回显
 def nameType_UART(self):
+    #第一种，发出单一指令，回传是不一样的指令，例：保存
     if self.data[self.index]['name'] == '序列号':
         if self.rx[2] == 0x12:
             SN_rxhex = self.rx[3:17]
@@ -116,9 +148,9 @@ def nameType_UART(self):
         if self.rx.hex() != '5a05020061':
             self.labelReturnlist[self.index].setText('NG')
             self.labelReturnlist[self.index].setStyleSheet('color: red')
-    elif self.data[self.index]['name'] == '恢复出厂':
+    elif self.data[self.index]['name'] == '恢复出厂设置':
         self.widgetslist[self.index].setText(' '.join([hex(x)[2:].zfill(2) for x in self.rx]).upper())
-        if self.rx.hex() != '5a0510006f':
+        if self.rx.hex() != '5a0510006f':  #
             self.labelReturnlist[self.index].setText('NG')
             self.labelReturnlist[self.index].setStyleSheet('color: red')
     elif self.data[self.index]['name'] == '保存':
@@ -126,24 +158,42 @@ def nameType_UART(self):
         if self.rx.hex() != '5a05110070':
             self.labelReturnlist[self.index].setText('NG')
             self.labelReturnlist[self.index].setStyleSheet('color: red')
-    elif (self.data[self.index]['name'] == '输出帧率' or self.data[self.index]['name'] == '输出模式' or self.data[self.index]['name'] == '输出开关' or
-            self.data[self.index]['name'] == '修改I2C从机地址' or self.data[self.index]['name'] == '低功耗模式使能' or self.data[self.index]['name'] == '强度低阈值和输出'):
+        else:
+            SaveFlag = 1
+            self.clearLabel() 
+            self.labelReturnlist[self.index].setText('OK')  # 保存成功后
+            self.labelReturnlist[self.index].setStyleSheet('color: green')
+    
+     #第二种，发出不一样的指令，回传是一样的指令，例：设置帧率      
+    elif (self.data[self.index]['name'] == '输出帧率' or self.data[self.index]['name'] == '输出模式' or self.data[self.index]['name'] == '输出开关' or 
+            self.data[self.index]['name'] == '修改I2C从机地址' or self.data[self.index]['name'] == '低功耗模式' or self.data[self.index]['name'] == '强度低阈值和输出' or
+            self.data[self.index]['name'] == '单双频模式' or self.data[self.index]['name'] == '校验和开关' or
+            self.data[self.index]['name'] == '配置120Ω端接电阻'  or  self.data[self.index]['name'] == '波特率' ):
         if self.rx != self.newCmd:
             self.labelReturnlist[self.index].setText('NG')
             self.labelReturnlist[self.index].setStyleSheet('color: red')
-    elif self.data[self.index]['name'] == '波特率':
-        if self.rx != self.newCmd and self.baudrx != b'':
-            self.labelReturnlist[self.index].setText('NG')
-            self.labelReturnlist[self.index].setStyleSheet('color: red')
-    elif self.data[self.index]['name'] == '通信接口设置':
-        print('TF mini-S回显5a 05 0a 00 69;TF miniPlus 无回显')
-        # if self.rx.hex() != '5a050a0069':
-        #    self.labelReturnlist[self.index].setText('NG')
-        #    self.labelReturnlist[self.index].setStyleSheet('color: red')
     elif self.data[self.index]['name'] == 'I/O模式使能':
         if self.rx.hex() != '5a053b009a':
             self.labelReturnlist[self.index].setText('NG')
             self.labelReturnlist[self.index].setStyleSheet('color:red')
+    elif self.data[self.index]['name'] == '通信接口':
+        if self.rx.hex() != '5a054500a4':
+            self.labelReturnlist[self.index].setText('NG')
+            self.labelReturnlist[self.index].setStyleSheet('color: red')
+    elif  self.data[self.index]['name'] == '低功耗模式设置' :
+        if self.rx.hex() != '5a058300e2':    #TF03比较特殊
+            self.labelReturnlist[self.index].setText('NG')
+            self.labelReturnlist[self.index].setStyleSheet('color: red')
+    elif self.data[self.index]['name'] == '超低功耗模式' : #TF-Luna退出超低功耗要多次发送
+       if self.widgetslist[self.index].currentIndex() == 0:
+           if self.rx.hex() != '5a055800b7':   
+            self.labelReturnlist[self.index].setText('NG')
+            self.labelReturnlist[self.index].setStyleSheet('color: red')
+       elif self.widgetslist[self.index].currentIndex() == 1:
+           if self.rx.hex() != '5a055801b8':   
+            self.labelReturnlist[self.index].setText('NG')
+            self.labelReturnlist[self.index].setStyleSheet('color: red')
+
     elif self.data[self.index]['widget'] == 'QLabel' and self.data[self.index]['name'] != '单次触发指令':
         self.widgetslist[self.index].setText(' '.join([hex(x)[2:].zfill(2) for x in self.rx]))
 
@@ -158,7 +208,7 @@ def lineEditCmd_UART(self):
     priCmdsum_int = int(priCmdhead_str, 16) + int(priCmdlen_str, 16) + int(priCmdid_str, 16)  # 未加数据段的校验和
     print('priCmddata_list:', priCmddata_list)
 
-    if self.data[self.index]['name'] == '输出帧率':
+    if self.data[self.index]['name'] == '输出帧率':  
         outframeVal_hexstr = hex(int(self.editVal))  # 将输入值转为十六进值字符串
         outframeVal_str = outframeVal_hexstr[2:]  # 将十六进制中的0x字符去掉
         outframeVal_str0 = outframeVal_str.rjust(4, '0')  # 补齐到4位不足添0
@@ -188,7 +238,7 @@ def lineEditCmd_UART(self):
         ioZoneH_str = ioZone_list[0]  # 将滞回区间高字节填入 ZoneH 字符串
         newCmddata_str = ioMODE_str + ioDL_str + ioDH_str + ioZoneL_str + ioZoneH_str  # 连接数据段
         newCmdsum_hexstr = hex(priCmdsum_int + int(ioMODE_str, 16) + int(ioDL_str, 16) + int(ioDH_str, 16) + int(ioZoneL_str, 16) + int(ioZoneH_str, 16))  # 加上数据段的校验和
-    elif self.data[self.index]['name'] == '低功耗模式使能':
+    elif self.data[self.index]['name'] == '低功耗模式':
         lowpowVal_hexstr = hex(int(self.editVal))  # 将输入值转为十六进值字符串
         lowpowVal_str = lowpowVal_hexstr[2:]  # 将十六进制中的0x字符去掉
         lowpowVal_str0 = lowpowVal_str.rjust(2, '0')  # 补齐到2位不足添0

@@ -11,6 +11,11 @@ from PyQt5.QtCore import QTimer, QTranslator
 from PyQt5.QtGui import QFont
 from Ui_WINCC import Ui_MainWindow
 import func.UART
+import func.Modbus
+import func.IIC
+
+
+
 
 
 class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Maindow界面类
@@ -24,6 +29,28 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
         self.rxlist = []  # 初始化点击按钮对应接收指令的列表
         self.lineEdit_id.setHidden(True)
         self.label_id.setHidden(True)
+
+        self.widgetslist = []  # 组件列表
+        self.labelReturnlist = []  # 结果返回OK/NG标签列表
+
+        self.address = None
+        self.SlaveID = None
+        self.Skipflag = False
+        self.rx = b''
+        self.IICCmd = ''
+        self.MODBUSCmd = b''
+        self.newCmd = b''
+        self.newCmd1 = b''
+        self.newCmd2 = b''
+        self.Communication  = "NULL"
+
+        self.trans = QTranslator()  # 翻译家
+        self.ENFlag = False  # 英文界面标识
+
+    def resizeEvent(self, event):
+        self.widget1.setGeometry(15, int(self.height()*0.1), self.width() - 20, self.height() - 160)   #json文件里的控件
+        self.frame.setGeometry(0, 0, self.width() - 20, int(self.height()*0.12))   #json文件里的控件
+
 
     # 获取串口列表
     def getSerialPort(self):
@@ -111,6 +138,16 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
         except Exception as e:
             print(type(e))
             print(e)
+     # 帮助菜单栏下打开帮助文档
+    def trigger_actHelp(self):
+        try:
+            # current_path = os.path.abspath(os.path.dirname(__file__))  # 获取当前路径
+            # html_path = os.path.join(current_path, 'help', 'help.html')  # 拼接帮助文件路径
+            # os.startfile(html_path)
+            os.startfile('help\help.html')
+        except Exception as e:
+            print(type(e))
+            print(e)
 
     # 菜单栏打开的信号和槽函数
     def trigger_actOpen(self):
@@ -119,6 +156,16 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
             file_path, _ = QFileDialog.getOpenFileName(self, 'Open File', '', 'JSON Files (*.json)')
             if file_path:
                 # 读取文件内容
+                self.Communication == file_path
+                if 'Modbus' in file_path:
+                    self.Communication = "Modbus"
+                elif 'IIC' in file_path:
+                    self.Communication = "IIC"
+                else :
+                    self.Communication = "UART"
+                print('self.file_path:',file_path)
+                print('self.Communication:',self.Communication)
+                
                 with open(file_path, 'r', encoding='utf-8') as f:
                     self.data = json.load(f)
 
@@ -131,7 +178,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
                 # 根据JSON数据生成控件
                 layout = QtWidgets.QGridLayout()
                 layout.setColumnStretch(0, 1)  # 第一列宽度设置为1
-                layout.setColumnStretch(1, 4)  # 第二列宽度设置为3
+                layout.setColumnStretch(1, 3)  # 第二列宽度设置为3
                 layout.setColumnStretch(2, 1)  # 第三列宽度设置为1
                 # layout.setColumnStretch(3, 1)  # 第四列宽度设置为1
 
@@ -152,11 +199,27 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
                         if item['name'] == '输出模式':
                             widget.addItems(["标准9字节(cm)", "字符串格式(m)", "标准9字节(mm)"])
                         elif item['name'] == '波特率':
-                            widget.addItems(['9600', '19200', '38400', '57600', '115200', '256000', '460800', '921600'])
+                            widget.addItems([ '9600', '19200', '38400', '57600','115200', '256000', '460800', '921600'])
                         elif item['name'] == '输出开关':
-                            widget.addItems(['关闭数据输出', '使能数据输出'])
-                        elif item['name'] == '通信接口设置':
+                            widget.addItems(['使能数据输出','关闭数据输出'])
+                        elif item['name'] == '超低功耗模式':
+                            widget.addItems(['不使能超低功耗','使能超低功耗'])     
+                        elif item['name'] == '低功耗模式设置':  #TF03特殊
+                            widget.addItems(['不使能低功耗','使能低功耗'])         
+                        elif item['name'] == '校验和开关':
+                            widget.addItems(['不使能校验和','使能校验和'])
+                        elif item['name'] == '单双频模式':
+                            widget.addItems(['双频模式','单频模式'])  
+                        elif item['name'] == '配置120Ω端接电阻':
+                            widget.addItems(['使能 120Ω端接电阻','不使能 120Ω端接电阻']) 
+                        elif item['name'] == '工作模式':
+                            widget.addItems(['连续','触发']) 
+                        
+                                                                   
+                        elif item['name'] == '通信接口设置': 
                             widget.addItems(['UART', 'I2C'])
+                        elif item['name'] == '通信接口': 
+                            widget.addItems(['TTL', 'CAN'])
                         elif item['name'] == '获取测距结果':
                             widget.addItems(['数据帧(标准9字节(cm))', '数据帧(标准9字节(mm))'])
                         else:
@@ -164,13 +227,15 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
                         layout.addWidget(widget, item['id'], 1)  # 第二列为不同类型组件
                     elif item['widget'] == 'QLineEdit':
                         widget = QtWidgets.QLineEdit(self)
-                        if item['name'] == '输出帧率':
-                            widget.setPlaceholderText("0 - 1000")
+                        if item['name'] == '输出帧率': 
+                            widget.setPlaceholderText("频率f=M/N,f取整数部分, M是最大频率,N∈正整数")
+                        if item['name'] == '设置SlaveID': 
+                            widget.setPlaceholderText("1-247")
                         elif item['name'] == '修改I2C从机地址':
-                            widget.setPlaceholderText("0x01 - 0x7F")
+                            widget.setPlaceholderText("0x08 - 0x77")
                         elif item['name'] == 'I/O模式使能':
                             widget.setPlaceholderText("eg:0 100 10 (DEC)")
-                        elif item['name'] == '低功耗模式使能':
+                        elif item['name'] == '低功耗模式':
                             widget.setPlaceholderText("0(关闭);1 - 10 (打开)")
                         elif item['name'] == '强度低阈值和输出':
                             widget.setPlaceholderText("eg:100 1200 (DEC)")
@@ -216,12 +281,39 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
         try:
             button = self.sender()  # 获取当前被点击的按钮
             self.index = self.buttonlist.index(button)  # 获取按钮在列表中的索引
-            if self.comboBox_port.currentText() == 'UART':
-                func.UART.send_UART(self)
-                func.UART.recvData_UART(self)
-                if self.rx != b'':
-                    func.UART.nameType_UART(self)
+            print('self.Communication:',self.Communication)
+            if self.comboBox_port.currentText()  == 'UART' or  self.comboBox_port.currentText() == 'RS485': #UART和RS485连接下都有可能出现5A和Modbus协议
+                if self.Communication == "UART":
+      
+                    func.UART.send_UART(self)
+                    func.UART.recvData_UART(self)
+                    if self.data[self.index]['name'] == '检查帧率' :
+                        func.UART.checkFrame_UART(self)
+                    if self.rx != b'':
+                        func.UART.nameType_UART(self)
+                elif  self.Communication == "Modbus":
+                    func.Modbus.sendCmd_MODBUS(self)
+                    func.Modbus.recvData_MODBUS(self)
+                    if self.data[self.index]['name'] == 'SlaveID':
+                       func.Modbus.checkSlaveID_MODBUS(self)
+                    else:
+                       func.Modbus.nameType_Modbus(self)
+                else :
+                    QMessageBox.warning(self, '提示', '当前通信方式下，不支持该协议！')           
+            elif self.comboBox_port.currentText() == 'IIC':                  
+                    if  self.Communication == "IIC":
+                        if self.data[self.index]['name'] == 'I2C从机地址':
+                            func.IIC.pollAddress_IIC(self)
+                        elif self.data[self.index]['name'] == '测距结果':
+                            func.IIC.checkDistance_IIC(self)
+                        else:
+                            func.IIC.sendCmd_IIC(self)   
+                            func.IIC.recvData_IIC(self)
+                            func.IIC.recvAnalysis_IIC(self)   
+                    else :
+                        QMessageBox.warning(self, '提示', '当前通信方式下，不支持该协议！')    
 
+                
             self.timer.start(100)  # 启动计时器为100毫秒
             self.savelist()
             self.saveSetting()
@@ -266,14 +358,28 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
         self.rxlist.append(' '.join([hex(x)[2:].zfill(2) for x in self.rx]))
         if self.data[self.index]['widget'] == 'QLabel':
             self.vallist.append(self.widgetslist[self.index].text())
-            self.cmdlist.append(self.data[self.index]['cmd'])
         elif self.data[self.index]['widget'] == 'QLineEdit':
             self.vallist.append(self.widgetslist[self.index].text())
-            self.cmdlist.append(' '.join([hex(x)[2:].zfill(2) for x in self.newCmd]))
         elif self.data[self.index]['widget'] == 'QComboBox':
             self.vallist.append(self.widgetslist[self.index].currentText())
-            self.cmdlist.append(' '.join([hex(x)[2:].zfill(2) for x in self.newCmd]))
-        print(self.namelist, self.vallist, self.returnlist, self.cmdlist, self.rxlist)
+        
+        if self.comboBox_port.currentText() == 'UART':
+                self.cmdlist.append(' '.join([hex(x)[2:].zfill(2) for x in self.newCmd]))
+        elif self.comboBox_port.currentText() == 'RS485':
+            if self.data[self.index]['name'] == '波特率':
+                self.cmdlist.append(' '.join([hex(x)[2:].zfill(2) for x in self.newCmd])+  '   ' + ' '.join([hex(x)[2:].zfill(2) for x in self.newCmd1]))
+                # self.cmdlist.append()
+            else :
+                self.cmdlist.append(' '.join([hex(x)[2:].zfill(2) for x in self.newCmd]))
+            
+        elif self.comboBox_port.currentText() == 'IIC':
+                self.cmdlist.append(' '.join([hex(x)[2:].zfill(2) for x in self.newCmd2])+ '   '+' '.join([hex(x)[2:].zfill(2) for x in self.newCmd1]))   #IIC
+
+        print("历史标签：",self.namelist)
+        print("历史解析/写入数据：",self.vallist)
+        print("历史结果：",self.returnlist)
+        print("历史发送指令：",self.cmdlist)
+        print("历史接收指令：",self.rxlist)
 
     # 保存每次设置的数据到txt文档中
     def saveSetting(self):

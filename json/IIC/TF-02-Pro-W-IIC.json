@@ -1,0 +1,20 @@
+[
+    {"id": 0, "name": "I2C从机地址", "widget": "QLabel", "button": "检查" , "cmd": ""}, 
+    {"id": 1, "name": "序列号", "widget": "QLabel", "button": "请求", "cmd": "5A 04 12 70"},
+    {"id": 2, "name": "固件版本", "widget": "QLabel", "button": "请求", "cmd": "5A 04 01 5F"},
+    {"id": 3, "name": "测距结果", "widget": "QLabel", "button": "设置", "cmd": ""},
+    {"id": 4, "name": "输出帧率", "widget": "QLineEdit", "button": "设置", "cmd": "5A 06 03 LL HH SU"},
+    {"id": 5, "name": "输出模式", "widget": "QComboBox", "button": "设置", "cmd": ["5A 05 05 01 65", "5A 05 05 02 66", "5A 05 05 06 6A", "5A 05 05 07 6B", "5A 05 05 08 6C", "5A 05 05 09 6D", "5A 05 05 0A 6E"]},
+    {"id": 6, "name": "波特率", "widget": "QComboBox", "button": "设置", "cmd": "5A 08 06 H1 H2 H3 H4 SU"},
+    {"id": 7, "name": "输出开关", "widget": "QComboBox", "button": "设置", "cmd": ["5A 05 07 01 67", "5A 05 07 00 66"]},
+    {"id": 8, "name": "通信接口设置", "widget": "QComboBox", "button": "设置", "cmd": ["5A 05 0A 00 69", "5A 05 0A 01 6A"]},
+    {"id": 9, "name": "修改I2C从机地址", "widget": "QLineEdit", "button": "设置", "cmd": "5A 05 0B ADDR SU"},
+    {"id": 11, "name": "低功耗模式", "widget": "QLineEdit", "button": "设置", "cmd": "5A 06 35 0X 00 SU"},
+    {"id": 12, "name": "强度低阈值和输出", "widget": "QLineEdit", "button": "设置", "cmd": "5A 07 22 XX LL HH 00"},
+    {"id": 13, "name": "系统复位", "widget": "QLabel", "button": "设置", "cmd": "5A 04 02 60"},
+    {"id": 14, "name": "恢复出厂设置", "widget": "QLabel", "button": "设置", "cmd": "5A 04 10 6E"},
+    {"id": 15, "name": "保存", "widget": "QLabel", "button": "设置", "cmd": "5A 04 11 6F"}
+   ]
+
+   
+

@@ -1,0 +1,19 @@
+[
+    {"id": 0, "name": "SlaveID", "widget": "QLabel", "button": "检查", "cmd": ""},
+    {"id": 1, "name": "固件版本", "widget": "QLabel", "button": "检查", "cmd": "ADDR 03 00 06 00 02"},
+	{"id": 2, "name": "测距结果", "widget": "QLabel", "button": "检查", "cmd": "ADDR 03 00 00 00 01"},
+    {"id": 3, "name": "测试强度", "widget": "QLabel", "button": "检查", "cmd": "ADDR 03 00 01 00 01"},
+    {"id": 5, "name": "输出帧率", "widget": "QLineEdit", "button": "设置", "cmd": "ADDR 06 00 86 FH FL"},
+    {"id": 6, "name": "低功耗模式", "widget": "QLineEdit", "button": "设置", "cmd": "ADDR 06 00 88 LH LL"},
+    {"id": 7, "name": "设置SlaveID", "widget": "QLineEdit", "button": "设置", "cmd": "ADDR 06 00 85 IH IL"},
+    {"id": 8, "name": "波特率", "widget": "QComboBox", "button": "设置", "cmd": ["ADDR 06 00 83 BH1 BH2","ADDR 06 00 84 BL1 BL2"]},
+    {"id": 9, "name": "工作模式", "widget": "QComboBox", "button": "设置", "cmd": ["ADDR 06 00 87 00 00","ADDR 06 00 87 00 01"]},
+    {"id": 10, "name": "重启", "widget": "QLabel", "button": "设置",  "cmd": "ADDR 06 00 81 00 01"},
+    {"id": 11, "name": "Modbus协议关闭", "widget": "QLabel", "button": "设置",  "cmd": "ADDR 06 00 82 00 01"},
+    {"id": 12, "name": "恢复出厂设置", "widget": "QLabel", "button": "设置",  "cmd": "ADDR 06 00 89 00 01"}, 
+    {"id": 13, "name": "保存配置", "widget": "QLabel", "button": "设置",  "cmd": "ADDR 06 00 80 00 00"}
+   ]
+
+
+   
+
