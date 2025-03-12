@@ -14,10 +14,6 @@ import func.UART
 import func.Modbus
 import func.IIC
 
-
-
-
-
 class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Maindow界面类
     def __init__(self, parent=None):
         super(MyMainWindow, self).__init__(parent)  # 初始化父类
@@ -167,7 +163,7 @@ class MyMainWindow(QMainWindow, Ui_MainWindow):  # 继承QMainWindow类和Ui_Mai
                 print('self.Communication:',self.Communication)
                 
                 with open(file_path, 'r', encoding='utf-8') as f:
-                    self.data = json.load(f)
+                    self.data = json.load(f)["TestItems"]  # 修改这里：添加TestItems键访问 2025年3月12日 直接通过json文件固定产品和接口信息
 
                 Cmdlist = []  # 指令保存列表
                 self.labellist = []  # 标签名称列表
